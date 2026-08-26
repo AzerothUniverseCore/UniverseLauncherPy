@@ -1,4 +1,4 @@
-# Azeroth Universe — Launcher
+# Azeroth Universe Launcher
 
 Official game launcher for **Azeroth Universe** (a customized WotLK 3.3.5a
 private server). Downloads, installs, and updates the game client
@@ -8,7 +8,7 @@ GitHub releases, then launches the game.
 ## Features
 
 - Custom dark "Midnight"-style UI (navy/black with gold accents), frameless
-  window with its own title bar — fully drawn in code, no Blizzard assets
+  window with its own title bar fully drawn in code, no Blizzard assets
   used.
   
 - Bilingual interface (French / English), switchable at any time via the
@@ -23,7 +23,7 @@ GitHub releases, then launches the game.
   frFR/enUS language packs).
   
 - Multi-part RAR archives are extracted with a bundled portable
-  `UnRAR.exe` — nothing extra for players to install.
+  `UnRAR.exe` nothing extra for players to install.
   
 - Reliable downloads on unstable connections: each attempt downloads a
   file fully in one pass and retries from scratch on a network failure
@@ -49,7 +49,7 @@ GitHub releases, then launches the game.
   
 - "Deep verification" checkbox: re-checks already-downloaded `.MPQ` files
   against the size reported by the server (a full MD5 check isn't
-  possible yet — Azeroth Universe doesn't publish official checksums).
+  possible yet Azeroth Universe doesn't publish official checksums).
   
 - Live progress feedback: a dedicated progress bar for the file currently
   downloading (tracks the real percentage), a separate overall
