@@ -100,8 +100,16 @@ repository) since `tools/UnRAR.exe` is a Windows binary.
 
 ## Building the final Windows executable
 
-See [`build/BUILD_INSTRUCTIONS.md`](build/BUILD_INSTRUCTIONS.md) — to be
-done directly on a Windows machine.
+To be done directly on a Windows machine, with the venv activated and
+`tools/UnRAR.exe` already in place:
+
+```bat
+pyinstaller build\launcher.spec
+```
+
+The final executable is created at `dist\AzerothUniverseLauncher.exe`. See
+[`build/BUILD_INSTRUCTIONS.md`](build/BUILD_INSTRUCTIONS.md) for the full
+step-by-step procedure.
 
 ## Updating the client file list
 
