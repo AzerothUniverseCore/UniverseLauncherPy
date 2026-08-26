@@ -10,52 +10,72 @@ GitHub releases, then launches the game.
 - Custom dark "Midnight"-style UI (navy/black with gold accents), frameless
   window with its own title bar — fully drawn in code, no Blizzard assets
   used.
+  
 - Bilingual interface (French / English), switchable at any time via the
   FR/EN buttons in the title bar.
+  
 - Switching the launcher's language also updates the actual in-game
-  language: it writes `SET locale "frFR"`/`"enUS"` to `WTF/realm.wtf`, not
+  language: it writes `SET locale "frFR"`/`"enUS"` to `WTF/Arealm.wtf`, not
   just the launcher's own interface text.
+  
 - Automatic download and installation of all ~30 client files: direct
   `.MPQ` downloads plus multi-part `.rar` archives (patches and the
   frFR/enUS language packs).
+  
 - Multi-part RAR archives are extracted with a bundled portable
   `UnRAR.exe` — nothing extra for players to install.
+  
 - Reliable downloads on unstable connections: each attempt downloads a
   file fully in one pass and retries from scratch on a network failure
   rather than resuming a partial file, avoiding silent corruption on
   flaky connections.
+  
 - **Pause / Resume**: an in-progress download can be paused and resumed
   later without losing progress or restarting the file from zero.
+  
 - **Cancel**: an installation in progress can be stopped cleanly at any
   time.
+  
 - Resume across sessions: files/archives that are already fully installed
   are remembered, so relaunching the installer never re-downloads content
   that's already in place.
+  
 - Automatic placement of every file in the right folder: patches into
   `Data/`, language files into `Data/frFR/` and `Data/enUS/`, other
   content at the client root.
+  
 - Writes `realmlist.wtf` for both locales (`Data/frFR/` and `Data/enUS/`)
   with the server's connection address.
+  
 - "Deep verification" checkbox: re-checks already-downloaded `.MPQ` files
   against the size reported by the server (a full MD5 check isn't
   possible yet — Azeroth Universe doesn't publish official checksums).
+  
 - Live progress feedback: a dedicated progress bar for the file currently
   downloading (tracks the real percentage), a separate overall
   installation progress bar and counter, plus download speed and
   estimated time remaining.
+  
 - Single action button that changes label depending on the current
   state: **Check → Install → Play**.
+  
 - **Play** launches the game client directly from the install folder once
   everything is installed.
+  
 - Server status badge (top right): shows online/offline and the number of
   connected players when a status endpoint is configured, refreshed
   automatically at a set interval.
+  
 - News panel with static announcements (editable).
+
 - **Website** / **Register** buttons opening the configured URLs.
+
 - Remembers the chosen install folder, language, and "deep verification"
   setting between launches.
+  
 - Real-time log console showing every install step (downloads,
   extraction, file placement, errors).
+  
 - Folder picker to choose or change the installation directory.
 
 ## Project structure
