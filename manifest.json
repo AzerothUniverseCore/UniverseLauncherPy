@@ -1,0 +1,351 @@
+{
+  "repo": "AzerothUniverseCore/UniverseClient",
+  "client_folder_name": "AzerothUniverse",
+  "files": [
+    {
+      "id": "frFR",
+      "kind": "archive",
+      "display_name": "frFR",
+      "extract_to": "Data/frFR",
+      "flatten_single_subfolder": "frFR",
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/frFR/frFR.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/frFR/frFR.part2.rar"
+      ]
+    },
+    {
+      "id": "enUS",
+      "kind": "archive",
+      "display_name": "enUS",
+      "extract_to": "Data/enUS",
+      "flatten_single_subfolder": "enUS",
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/enUS/enUS.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/enUS/enUS.part2.rar"
+      ]
+    },
+    {
+      "id": "patch-Y.MPQ",
+      "kind": "archive",
+      "display_name": "patch-Y.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-Y.MPQ/patch-Y.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-Y.MPQ/patch-Y.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-Y.MPQ/patch-Y.part3.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-Y.MPQ/patch-Y.part4.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-Y.MPQ/patch-Y.part5.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-Y.MPQ/patch-Y.part6.rar"
+      ]
+    },
+    {
+      "id": "patch-K.MPQ",
+      "kind": "archive",
+      "display_name": "patch-K.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-K.MPQ/patch-K.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-K.MPQ/patch-K.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-K.MPQ/patch-K.part3.rar"
+      ]
+    },
+    {
+      "id": "patch-F.MPQ",
+      "kind": "archive",
+      "display_name": "patch-F.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-F.MPQ/patch-F.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-F.MPQ/patch-F.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-F.MPQ/patch-F.part3.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-F.MPQ/patch-F.part4.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-F.MPQ/patch-F.part5.rar"
+      ]
+    },
+    {
+      "id": "patch-E.MPQ",
+      "kind": "archive",
+      "display_name": "patch-E.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-E.MPQ/patch-E.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-E.MPQ/patch-E.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-E.MPQ/patch-E.part3.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-E.MPQ/patch-E.part4.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-E.MPQ/patch-E.part5.rar"
+      ]
+    },
+    {
+      "id": "patch-D.MPQ",
+      "kind": "archive",
+      "display_name": "patch-D.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part01.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part02.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part03.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part04.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part05.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part06.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part07.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part08.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part09.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part10.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part11.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part12.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part13.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-D.MPQ/patch-D.part14.rar"
+      ]
+    },
+    {
+      "id": "patch-C.MPQ",
+      "kind": "archive",
+      "display_name": "patch-C.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part01.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part02.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part03.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part04.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part05.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part06.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part07.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part08.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part09.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part10.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part11.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part12.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part13.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part14.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-C.MPQ/patch-C.part15.rar"
+      ]
+    },
+    {
+      "id": "patch-B.MPQ",
+      "kind": "archive",
+      "display_name": "patch-B.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part01.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part02.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part03.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part04.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part05.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part06.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part07.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part08.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part09.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part10.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part11.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-B.MPQ/patch-B.part12.rar"
+      ]
+    },
+    {
+      "id": "patch-A.MPQ",
+      "kind": "archive",
+      "display_name": "patch-A.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-A.MPQ/patch-A.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-A.MPQ/patch-A.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-A.MPQ/patch-A.part3.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-A.MPQ/patch-A.part4.rar"
+      ]
+    },
+    {
+      "id": "patch-9.MPQ",
+      "kind": "archive",
+      "display_name": "patch-9.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-9.MPQ/patch-9.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-9.MPQ/patch-9.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-9.MPQ/patch-9.part3.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-9.MPQ/patch-9.part4.rar"
+      ]
+    },
+    {
+      "id": "patch-8.MPQ",
+      "kind": "archive",
+      "display_name": "patch-8.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-8.MPQ/patch-8.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-8.MPQ/patch-8.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-8.MPQ/patch-8.part3.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-8.MPQ/patch-8.part4.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-8.MPQ/patch-8.part5.rar"
+      ]
+    },
+    {
+      "id": "patch-7.MPQ",
+      "kind": "archive",
+      "display_name": "patch-7.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-7.MPQ/patch-7.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-7.MPQ/patch-7.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-7.MPQ/patch-7.part3.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-7.MPQ/patch-7.part4.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-7.MPQ/patch-7.part5.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-7.MPQ/patch-7.part6.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-7.MPQ/patch-7.part7.rar"
+      ]
+    },
+    {
+      "id": "patch-6.MPQ",
+      "kind": "archive",
+      "display_name": "patch-6.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-6.MPQ/patch-6.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-6.MPQ/patch-6.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-6.MPQ/patch-6.part3.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-6.MPQ/patch-6.part4.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-6.MPQ/patch-6.part5.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-6.MPQ/patch-6.part6.rar"
+      ]
+    },
+    {
+      "id": "patch-5.MPQ",
+      "kind": "archive",
+      "display_name": "patch-5.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-5.MPQ/patch-5.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-5.MPQ/patch-5.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-5.MPQ/patch-5.part3.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-5.MPQ/patch-5.part4.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-5.MPQ/patch-5.part5.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-5.MPQ/patch-5.part6.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-5.MPQ/patch-5.part7.rar"
+      ]
+    },
+    {
+      "id": "patch-4.MPQ",
+      "kind": "archive",
+      "display_name": "patch-4.MPQ",
+      "extract_to": "Data",
+      "flatten_single_subfolder": null,
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-4.MPQ/patch-4.part1.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-4.MPQ/patch-4.part2.rar",
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-4.MPQ/patch-4.part3.rar"
+      ]
+    },
+    {
+      "id": "common.MPQ",
+      "kind": "direct",
+      "display_name": "common.MPQ",
+      "target": "Data/common.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/common.MPQ/common.MPQ"
+    },
+    {
+      "id": "common-2.MPQ",
+      "kind": "direct",
+      "display_name": "common-2.MPQ",
+      "target": "Data/common-2.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/common-2.MPQ/common-2.MPQ"
+    },
+    {
+      "id": "expansion.MPQ",
+      "kind": "direct",
+      "display_name": "expansion.MPQ",
+      "target": "Data/expansion.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/expansion.MPQ/expansion.MPQ"
+    },
+    {
+      "id": "lichking.MPQ",
+      "kind": "direct",
+      "display_name": "lichking.MPQ",
+      "target": "Data/lichking.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/lichking.MPQ/lichking.MPQ"
+    },
+    {
+      "id": "patch.MPQ",
+      "kind": "direct",
+      "display_name": "patch.MPQ",
+      "target": "Data/patch.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch.MPQ/patch.MPQ"
+    },
+    {
+      "id": "patch-2.MPQ",
+      "kind": "direct",
+      "display_name": "patch-2.MPQ",
+      "target": "Data/patch-2.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-2.MPQ/patch-2.MPQ"
+    },
+    {
+      "id": "patch-3.MPQ",
+      "kind": "direct",
+      "display_name": "patch-3.MPQ",
+      "target": "Data/patch-3.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-3.MPQ/patch-3.MPQ"
+    },
+    {
+      "id": "patch-I.MPQ",
+      "kind": "direct",
+      "display_name": "patch-I.MPQ",
+      "target": "Data/patch-I.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-I.MPQ/patch-I.MPQ"
+    },
+    {
+      "id": "patch-N.MPQ",
+      "kind": "direct",
+      "display_name": "patch-N.MPQ",
+      "target": "Data/patch-N.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-N.MPQ/patch-N.MPQ"
+    },
+    {
+      "id": "patch-T.MPQ",
+      "kind": "direct",
+      "display_name": "patch-T.MPQ",
+      "target": "Data/patch-T.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-T.MPQ/patch-T.MPQ"
+    },
+    {
+      "id": "patch-U.MPQ",
+      "kind": "direct",
+      "display_name": "patch-U.MPQ",
+      "target": "Data/patch-U.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-U.MPQ/patch-U.MPQ"
+    },
+    {
+      "id": "patch-Z.MPQ",
+      "kind": "direct",
+      "display_name": "patch-Z.MPQ",
+      "target": "Data/patch-Z.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-Z.MPQ/patch-Z.MPQ"
+    },
+    {
+      "id": "patch-ZA.MPQ",
+      "kind": "direct",
+      "display_name": "patch-ZA.MPQ",
+      "target": "Data/patch-ZA.MPQ",
+      "url": "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/patch-ZA.MPQ/patch-ZA.MPQ"
+    },
+    {
+      "id": "AzerothUniverse",
+      "kind": "archive",
+      "display_name": "AzerothUniverse (Additional)",
+      "extract_to": ".",
+      "flatten_single_subfolder": "AzerothUniverse",
+      "parts": [
+        "https://github.com/AzerothUniverseCore/UniverseClient/releases/download/AzerothUniverse/AzerothUniverse.rar"
+      ]
+    }
+  ]
+}
