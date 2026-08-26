@@ -1,115 +1,114 @@
-# Azeroth Universe - Launcher
+# Azeroth Universe — Launcher
 
-Launcher officiel du client de jeu **Azeroth Universe** (serveur privé
-WotLK 3.3.5a personnalisé). Télécharge, installe et met à jour
-automatiquement le client depuis les releases GitHub du dépôt
-[UniverseClient](https://github.com/AzerothUniverseCore/UniverseClient),
-puis lance le jeu.
+Official game launcher for **Azeroth Universe** (a customized WotLK 3.3.5a
+private server). Downloads, installs, and updates the game client
+automatically from the [UniverseClient](https://github.com/AzerothUniverseCore/UniverseClient)
+GitHub releases, then launches the game.
 
-## Fonctionnalités
+## Features
 
-- Design sombre original façon "Midnight" (bleu nuit/noir + liserés dorés),
-  fenêtre sans décoration système avec barre de titre maison - entièrement
-  dessiné par code, aucun asset Blizzard utilisé.
-- Interface bilingue Français / English (boutons FR/EN dans la barre de
-  titre), changeable à tout moment.
-- Le changement de langue FR/EN met aussi à jour la langue réelle du client
-  (`WTF/Arealm.wtf`, ligne `SET locale "frFR"`/`"enUS"`), pas seulement celle
-  du launcher.
-- Téléchargement et installation automatique des ~30 fichiers du client
-  (fichiers `.MPQ` directs + archives `.rar` multi-parties pour les patchs
-  et les paquets de langue frFR/enUS), avec reprise en cas de coupure.
-- Placement automatique au bon endroit : patchs dans `Data/`, langues dans
-  `Data/frFR/` et `Data/enUS/`, contenu additionnel à la racine du client.
-- Case "Vérification approfondie" : recontrôle la taille des `.MPQ` déjà
-  téléchargés par rapport au serveur (une vraie vérification MD5 n'est pas
-  possible tant qu'Azeroth Universe ne publie pas de sommes de contrôle
-  officielles - voir `core/installer.py`).
-- Bouton d'action unique qui change de libellé selon l'état : **Vérifier**
-  → **Installer** → **Jouer**.
-- Panneau "Actualités" (contenu statique éditable dans `i18n.py`,
-  `NEWS_ITEMS`) et badge de statut serveur (voir limitation ci-dessous).
+- Custom dark "Midnight"-style UI (navy/black with gold accents), frameless
+  window with its own title bar — fully drawn in code, no Blizzard assets
+  used.
+- Bilingual interface (French / English), switchable at any time via the
+  FR/EN buttons in the title bar.
+- Switching the launcher's language also updates the actual in-game
+  language: it writes `SET locale "frFR"`/`"enUS"` to `WTF/realm.wtf`, not
+  just the launcher's own interface text.
+- Automatic download and installation of all ~30 client files: direct
+  `.MPQ` downloads plus multi-part `.rar` archives (patches and the
+  frFR/enUS language packs).
+- Multi-part RAR archives are extracted with a bundled portable
+  `UnRAR.exe` — nothing extra for players to install.
+- Reliable downloads on unstable connections: each attempt downloads a
+  file fully in one pass and retries from scratch on a network failure
+  rather than resuming a partial file, avoiding silent corruption on
+  flaky connections.
+- **Pause / Resume**: an in-progress download can be paused and resumed
+  later without losing progress or restarting the file from zero.
+- **Cancel**: an installation in progress can be stopped cleanly at any
+  time.
+- Resume across sessions: files/archives that are already fully installed
+  are remembered, so relaunching the installer never re-downloads content
+  that's already in place.
+- Automatic placement of every file in the right folder: patches into
+  `Data/`, language files into `Data/frFR/` and `Data/enUS/`, other
+  content at the client root.
+- Writes `realmlist.wtf` for both locales (`Data/frFR/` and `Data/enUS/`)
+  with the server's connection address.
+- "Deep verification" checkbox: re-checks already-downloaded `.MPQ` files
+  against the size reported by the server (a full MD5 check isn't
+  possible yet — Azeroth Universe doesn't publish official checksums).
+- Live progress feedback: a dedicated progress bar for the file currently
+  downloading (tracks the real percentage), a separate overall
+  installation progress bar and counter, plus download speed and
+  estimated time remaining.
+- Single action button that changes label depending on the current
+  state: **Check → Install → Play**.
+- **Play** launches the game client directly from the install folder once
+  everything is installed.
+- Server status badge (top right): shows online/offline and the number of
+  connected players when a status endpoint is configured, refreshed
+  automatically at a set interval.
+- News panel with static announcements (editable).
+- **Website** / **Register** buttons opening the configured URLs.
+- Remembers the chosen install folder, language, and "deep verification"
+  setting between launches.
+- Real-time log console showing every install step (downloads,
+  extraction, file placement, errors).
+- Folder picker to choose or change the installation directory.
 
-## Structure du projet
+## Project structure
 
 ```
 AzerothUniverseLauncher/
-├── main.py                  # point d'entree de l'application
-├── config.py                 # chemins, constantes, sauvegarde des reglages
-├── i18n.py                   # textes FR/EN
-├── generate_manifest.py      # genere manifest.json (liste des fichiers a telecharger)
-├── generate_assets.py        # genere les images originales du launcher
-├── manifest.json              # liste des fichiers du client (genere)
+├── main.py                    # application entry point
+├── config.py                  # paths, constants, settings persistence
+├── i18n.py                    # FR/EN text strings
+├── generate_manifest.py       # generates manifest.json (list of files to download)
+├── generate_assets.py         # generates the launcher's original artwork
+├── manifest.json               # list of client files (generated)
 ├── requirements.txt
 ├── core/
-│   ├── downloader.py          # telechargement HTTP avec reprise
-│   ├── extractor.py           # extraction .rar via UnRAR.exe portable
-│   ├── installer.py           # orchestration complete (QThread)
-│   ├── wtf.py                  # ecrit SET locale dans WTF/Arealm.wtf
-│   └── server_status.py        # badge "serveur en ligne" (optionnel)
+│   ├── downloader.py           # HTTP download with automatic retry
+│   ├── extractor.py            # .rar extraction via portable UnRAR.exe
+│   ├── installer.py            # full orchestration (QThread)
+│   ├── wtf.py                  # writes SET locale to WTF/realm.wtf
+│   └── server_status.py        # "server online" badge (optional)
 ├── ui/
-│   ├── theme.py                # feuille de style (QSS)
-│   └── main_window.py          # fenetre principale (barre de titre maison)
-├── assets/                    # logo, fond d'ecran, icone (generes)
-├── tools/                      # UnRAR.exe a ajouter manuellement (voir dedans)
+│   ├── theme.py                 # stylesheet (QSS)
+│   └── main_window.py           # main window (custom title bar)
+├── assets/                     # logo, background, icon (generated)
+├── tools/                       # UnRAR.exe to add manually (see inside)
 └── build/
-    ├── launcher.spec            # spec PyInstaller
-    └── BUILD_INSTRUCTIONS.md    # procedure de compilation Windows
+    ├── launcher.spec             # PyInstaller spec
+    └── BUILD_INSTRUCTIONS.md     # Windows build procedure
 ```
 
-## Lancer en développement (Linux/Windows/macOS)
+## Running in development (Linux/Windows/macOS)
 
 ```bash
 python3 -m venv venv
-source venv/bin/activate   # ou venv\Scripts\activate sous Windows
+source venv/bin/activate   # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 python3 main.py
 ```
 
-Sous Linux/macOS, l'extraction utilisera `unrar` du système s'il est
-installé (`apt install unrar` sur Debian/Ubuntu, ou `unrar-free` selon les
-dépôts) puisque `tools/UnRAR.exe` est un binaire Windows.
+On Linux/macOS, extraction falls back to the system's `unrar` if installed
+(`apt install unrar` on Debian/Ubuntu, or `unrar-free` depending on the
+repository) since `tools/UnRAR.exe` is a Windows binary.
 
-## Compiler l'exécutable Windows final
+## Building the final Windows executable
 
-Voir [`build/BUILD_INSTRUCTIONS.md`](build/BUILD_INSTRUCTIONS.md) - à faire
-directement sur une machine Windows.
+See [`build/BUILD_INSTRUCTIONS.md`](build/BUILD_INSTRUCTIONS.md) — to be
+done directly on a Windows machine.
 
-## Mettre à jour la liste des fichiers du client
+## Updating the client file list
 
-Si de nouveaux patchs sont publiés sur UniverseClient, éditez les listes en
-haut de `generate_manifest.py` (`MULTI_PART_MPQ`, `LOCALES`,
-`SINGLE_MPQ_FILES`) puis relancez :
+If new patches are published on UniverseClient, edit the lists at the top
+of `generate_manifest.py` (`MULTI_PART_MPQ`, `LOCALES`,
+`SINGLE_MPQ_FILES`), then re-run it:
 
 ```bash
 python3 generate_manifest.py
 ```
-
-## ⚠️ À vérifier avant distribution
-
-- Les URLs des 13 fichiers `.MPQ` livrés en une seule partie ont été déduites
-  par convention (même schéma que les archives multi-parties) et n'ont pas pu
-  être vérifiées avec un accès réseau direct à GitHub au moment du
-  développement. Testez le téléchargement d'au moins 2-3 d'entre eux avant de
-  distribuer le launcher à la communauté (détails dans
-  `build/BUILD_INSTRUCTIONS.md`).
-- Les boutons **Site web** et **S'inscrire** de la barre du bas pointent
-  tous les deux vers `https://azeroth-universe.eu/en` par défaut
-  (`config.WEBSITE_URL` / `config.REGISTER_URL`) : aucune page d'inscription
-  dédiée ne nous avait été communiquée. Mettez à jour `REGISTER_URL` dans
-  `config.py` si vous avez une page de création de compte séparée.
-- Le badge "Serveur en ligne" en haut à droite affiche **"Statut non
-  configuré"** tant que `config.STATUS_URL` reste à `None` : aucune API de
-  statut réelle ne nous a été fournie, donc le launcher n'invente pas de
-  nombre de joueurs connectés. Si vous avez (ou mettez en place) un
-  endpoint JSON `{"online": true, "players": 12}`, renseignez son URL dans
-  `config.py` pour activer le badge en direct (voir
-  `core/server_status.py`). Un exemple prêt à l'emploi (PHP + MySQL en
-  lecture seule) est fourni dans
-  [`build/server_status_api/`](build/server_status_api/README.md) - à
-  héberger sur votre site, pas dans le launcher.
-- La fenêtre n'a plus de bordure système (barre de titre "maison", comme
-  sur la maquette) : elle est donc de taille fixe et se déplace en glissant
-  la barre du haut. Si vous préférez une fenêtre redimensionnable avec la
-  décoration standard de Windows, il faudra retirer `Qt.FramelessWindowHint`
-  dans `ui/main_window.py` (`AzerothLauncherWindow.__init__`).
