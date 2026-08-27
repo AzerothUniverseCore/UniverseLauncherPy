@@ -217,6 +217,12 @@ class InstallWorker(QThread):
             local_path = os.path.join(cache_dir, os.path.basename(url))
             local_parts.append(local_path)
 
+            if os.path.isfile(local_path):
+                remote_size = downloader.get_remote_size(url)
+                if remote_size is not None and os.path.getsize(local_path) == remote_size:
+                    self.sig_log.emit(f"[OK] {part_label} deja telecharge, ignore.")
+                    continue
+
             def progress_cb(downloaded, total_bytes, _label=part_label):
                 self.sig_file_progress.emit(_label, downloaded, total_bytes)
 
