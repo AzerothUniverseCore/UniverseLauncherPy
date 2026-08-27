@@ -78,7 +78,7 @@ STRINGS = {
         "error_disk_space_title": "Espace disque insuffisant",
         "error_game_not_found_title": "Client introuvable",
         "error_game_not_found_body": (
-            "Wow.exe est introuvable dans le dossier d'installation. "
+            "AzerothUniverse.exe est introuvable dans le dossier d'installation. "
             "Lancez d'abord l'installation ou vérifiez le dossier choisi."
         ),
         "confirm_cancel_title": "Annuler l'installation ?",
@@ -161,7 +161,7 @@ STRINGS = {
         "error_disk_space_title": "Not enough disk space",
         "error_game_not_found_title": "Client not found",
         "error_game_not_found_body": (
-            "Wow.exe could not be found in the installation folder. Run "
+            "AzerothUniverse.exe could not be found in the installation folder. Run "
             "the installation first or check the selected folder."
         ),
         "confirm_cancel_title": "Cancel installation?",

@@ -82,9 +82,9 @@ CHECKBOX_CHECKED_PATH = os.path.join(ASSETS_DIR, "checkbox_checked.png").replace
 SETTINGS_PATH = os.path.join(APP_DIR, SETTINGS_FILENAME)
 
 # Nom de l'executable du jeu recherche par le bouton "Jouer" une fois
-# l'installation terminee. Wow.exe est le nom standard des clients 3.3.5a ;
+# l'installation terminee. AzerothUniverse.exe est le nom standard des clients 3.3.5a ;
 # le launcher recherche aussi en variante minuscule par securite.
-GAME_EXECUTABLE_CANDIDATES = ["Wow.exe", "wow.exe", "WoW.exe"]
+GAME_EXECUTABLE_CANDIDATES = ["AzerothUniverse.exe", "azerothuniverse.exe", "AzerothUniverse.exe"]
 
 DEFAULT_REALMLIST = "realm.azeroth-universe.eu"
 

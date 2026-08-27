@@ -91,7 +91,7 @@ Avant d'envoyer le launcher à la communauté :
      à côté de `Data/`, pas dedans)
 3. Vérifiez que `Data/enUS/realmlist.wtf` et `Data/frFR/realmlist.wtf`
    contiennent bien l'adresse de connexion saisie dans le launcher.
-4. Vérifiez que le bouton **Jouer** lance bien `Wow.exe`.
+4. Vérifiez que le bouton **Jouer** lance bien `AzerothUniverse.exe`.
 
 ⚠️ **Important** : les URLs de téléchargement des 13 fichiers `.MPQ` livrés
 en un seul morceau (`common.MPQ`, `expansion.MPQ`, `lichking.MPQ`, etc.) ont
