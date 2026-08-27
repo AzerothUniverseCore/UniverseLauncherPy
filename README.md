@@ -7,7 +7,7 @@ GitHub releases, then launches the game.
 
 ## Features
 
-- Custom dark "Midnight"-style UI (navy/black with gold accents), frameless
+- Custom dark "Pandaria"-style UI (navy/black with gold accents), frameless
   window with its own title bar fully drawn in code, no Blizzard assets
   used.
   
