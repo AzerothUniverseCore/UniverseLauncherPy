@@ -10,6 +10,7 @@ dore dont le libelle change selon l'etat : Verifier -> Installer -> Jouer).
 """
 
 import os
+import sys
 import time
 import subprocess
 
@@ -31,6 +32,7 @@ from core.installer import (
 )
 from core import wtf as wtf_module
 from core.server_status import ServerStatusWorker
+from core import updater as updater_module
 
 
 def _format_duration(seconds):
@@ -86,6 +88,8 @@ class AzerothLauncherWindow(QMainWindow):
         self.tr_ = Translator(self.settings.get("lang", "fr"))
         self.worker = None
         self.status_worker = None
+        self.update_check_worker = None
+        self.update_download_worker = None
         self._checked_once = False
         self._missing_count = None
         self._dl_tracker = {"name": None, "last_time": None, "last_bytes": 0, "speed_ema": None}
@@ -124,6 +128,11 @@ class AzerothLauncherWindow(QMainWindow):
         self._status_timer.setInterval(config.STATUS_POLL_INTERVAL_MS)
         self._status_timer.timeout.connect(self._check_server_status)
         self._status_timer.start()
+
+        # Verification de mise a jour du LAUNCHER (pas du client WoW, voir
+        # core/installer.py pour ca) : une seule fois au demarrage, en
+        # arriere-plan, sans bloquer l'affichage de la fenetre.
+        self._check_for_launcher_update()
 
     # ------------------------------------------------------------------
     def _center_on_screen(self):
@@ -601,6 +610,83 @@ class AzerothLauncherWindow(QMainWindow):
         self._refresh_status_badge_text()
 
     # ------------------------------------------------------------------
+    # Mise a jour du launcher (voir core/updater.py - ne concerne PAS le
+    # client WoW, qui reste gere par core/installer.py)
+    # ------------------------------------------------------------------
+    def _check_for_launcher_update(self):
+        if self.update_check_worker is not None and self.update_check_worker.isRunning():
+            return
+        self.update_check_worker = updater_module.UpdateCheckWorker(
+            config.LAUNCHER_UPDATE_REPO, config.LAUNCHER_VERSION)
+        self.update_check_worker.sig_result.connect(self._on_update_check_result)
+        self.update_check_worker.start()
+
+    def _on_update_check_result(self, available, tag, asset_url, error):
+        if error:
+            # Simple echec reseau/API (pas de connexion, GitHub injoignable,
+            # limite de requetes atteinte...) : pas la peine d'interrompre
+            # l'utilisateur avec une boite de dialogue pour ca, un mot dans
+            # le journal suffit. La verification suivante (prochain
+            # lancement) reessaiera normalement.
+            self._on_log("[INFO] " + self.tr_.t("update_check_failed"))
+            return
+        if not available:
+            return
+
+        is_frozen = bool(getattr(sys, "frozen", False))
+        if not is_frozen:
+            # Lance depuis les sources (python main.py) : pas d'executable
+            # PyInstaller a remplacer, donc pas de mise a jour automatique
+            # possible ici (voir la note en tete de core/updater.py). On se
+            # contente de signaler la nouvelle version dans le journal.
+            self._on_log("[INFO] " + self.tr_.t("update_dev_mode_skip", tag=tag))
+            return
+
+        if not asset_url:
+            # Release plus recente detectee, mais sans piece jointe .rar
+            # (release mal preparee cote GitHub, ou en cours de publication) :
+            # rien a telecharger automatiquement, on le signale simplement.
+            self._on_log(
+                "[INFO] " + self.tr_.t("update_error_body", error=f"no .rar asset ({tag})"))
+            return
+
+        answer = QMessageBox.question(
+            self, self.tr_.t("update_available_title"),
+            self.tr_.t("update_available_body", tag=tag),
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        if answer == QMessageBox.Yes:
+            self._start_launcher_update(asset_url)
+
+    def _start_launcher_update(self, asset_url):
+        if self.update_download_worker is not None and self.update_download_worker.isRunning():
+            return
+        self.lbl_status.setText(self.tr_.t("update_downloading"))
+        self.update_download_worker = updater_module.UpdateDownloadWorker(
+            asset_url, config.APP_DIR, sys.executable)
+        self.update_download_worker.sig_progress.connect(self._on_update_download_progress)
+        self.update_download_worker.sig_finished.connect(self._on_update_download_finished)
+        self.update_download_worker.start()
+
+    def _on_update_download_progress(self, downloaded, total):
+        pct = f" — {int(downloaded * 100 / total)}%" if total else ""
+        self.lbl_status.setText(f"{self.tr_.t('update_downloading')}{pct}")
+
+    def _on_update_download_finished(self, success, batch_path, error):
+        if not success:
+            QMessageBox.warning(
+                self, self.tr_.t("update_error_title"),
+                self.tr_.t("update_error_body", error=error))
+            self.lbl_status.setText(self.tr_.t("select_folder_prompt"))
+            return
+
+        # A partir d'ici, le script .bat attend deja (en boucle sur
+        # tasklist) que ce processus disparaisse avant de copier quoi que
+        # ce soit : on peut donc fermer la fenetre en toute securite, il ne
+        # touchera aux fichiers qu'une fois qu'on aura vraiment quitte.
+        updater_module.launch_updater_and_quit(batch_path)
+        self.close()
+
+    # ------------------------------------------------------------------
     # Actions
     # ------------------------------------------------------------------
     def _on_browse(self):
@@ -933,5 +1019,15 @@ class AzerothLauncherWindow(QMainWindow):
             # celui corrige plus haut dans _on_finished(). On attend donc au
             # moins aussi longtemps que le timeout reseau du thread de statut.
             self.status_worker.wait(7000)
+        # Meme raisonnement que pour status_worker juste au-dessus (voir sa
+        # note) : on laisse les threads de verification/telechargement de
+        # mise a jour du launcher, s'ils tournent encore, vraiment se
+        # terminer avant de fermer la fenetre (et donc de perdre toute
+        # reference Python vers eux), pour eviter le meme crash "QThread:
+        # Destroyed while thread is still running".
+        if self.update_check_worker is not None and self.update_check_worker.isRunning():
+            self.update_check_worker.wait(7000)
+        if self.update_download_worker is not None and self.update_download_worker.isRunning():
+            self.update_download_worker.wait(3000)
         self._save_settings()
         super().closeEvent(event)

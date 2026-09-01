@@ -96,6 +96,21 @@ STRINGS = {
             "Certains liens de téléchargement n'ont pas pu être vérifiés à "
             "l'avance. En cas d'échec, réessayez ou contactez le support."
         ),
+        "update_available_title": "Mise à jour du launcher disponible",
+        "update_available_body": (
+            "Une nouvelle version du launcher est disponible ({tag}). "
+            "Voulez-vous la télécharger et l'installer maintenant ? Le "
+            "launcher redémarrera automatiquement une fois la mise à jour "
+            "appliquée."
+        ),
+        "update_downloading": "Téléchargement de la mise à jour du launcher…",
+        "update_check_failed": "Impossible de vérifier les mises à jour du launcher.",
+        "update_error_title": "Échec de la mise à jour",
+        "update_error_body": "La mise à jour du launcher a échoué : {error}",
+        "update_dev_mode_skip": (
+            "Mise à jour du launcher disponible ({tag}), mais l'installation "
+            "automatique n'est possible que depuis l'exécutable compilé."
+        ),
     },
     "en": {
         "app_title": "Azeroth Universe - Launcher",
@@ -178,6 +193,20 @@ STRINGS = {
         "unverified_warning": (
             "Some download links could not be verified in advance. If one "
             "fails, please retry or contact support."
+        ),
+        "update_available_title": "Launcher update available",
+        "update_available_body": (
+            "A new launcher version is available ({tag}). Do you want to "
+            "download and install it now? The launcher will restart "
+            "automatically once the update is applied."
+        ),
+        "update_downloading": "Downloading launcher update…",
+        "update_check_failed": "Could not check for launcher updates.",
+        "update_error_title": "Update failed",
+        "update_error_body": "The launcher update failed: {error}",
+        "update_dev_mode_skip": (
+            "A launcher update is available ({tag}), but automatic "
+            "installation only works from the compiled executable."
         ),
     },
 }

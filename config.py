@@ -21,6 +21,16 @@ APP_VERSION = "1.0.0"
 # indicatif pour les joueurs, a mettre a jour au fil des versions du serveur.
 CLIENT_BUILD = "3.3.9"
 
+# Depot GitHub et tag de release correspondant a la version du LAUNCHER
+# actuellement livree (voir core/updater.py) : PAS le meme depot que le
+# manifeste du client (manifest.json -> AzerothUniverseCore/UniverseClient).
+# A chaque nouvelle release du launcher (tag + AzerothUniverseLauncher.rar
+# publies sur GitHub), mettez LAUNCHER_VERSION a jour avec le tag exact de
+# cette release AVANT de compiler, sinon le launcher fraichement compile se
+# proposera de se "mettre a jour" vers... lui-meme en boucle.
+LAUNCHER_UPDATE_REPO = "AzerothUniverseCore/UniverseLauncherPy"
+LAUNCHER_VERSION = "339.49448"
+
 # Liens ouverts par les boutons SITE WEB / S'INSCRIRE de la barre du bas.
 # NOTE : seule l'URL du site principal a ete confirmee dans nos echanges
 # precedents ; aucune page d'inscription dediee ne nous a ete communiquee,

@@ -35,14 +35,33 @@ def done_flag_path(install_dir, entry_id):
     return os.path.join(cache_dir_for(install_dir), "done", f"{entry_id}.done")
 
 
-FORCE_REFRESH_ENTRY_IDS = ("frFR", "enUS")
+def parts_cache_dir_for(install_dir, entry_id):
+    return os.path.join(cache_dir_for(install_dir), "parts", entry_id)
+
+
+# Destinations d'extraction PARTAGEES entre PLUSIEURS entrees du manifeste :
+# "Data" (tous les patchs .MPQ : patch-Y.MPQ, patch-D.MPQ... ainsi que
+# common.MPQ, expansion.MPQ, lichking.MPQ) et "." (l'archive
+# "AzerothUniverse (Additional)", qui s'extrait a la racine meme du dossier
+# client, la ou vivent aussi le launcher, les DLL, etc). A la difference de
+# destinations DEDIEES comme "Data/frFR" ou "Data/enUS" (qui n'appartiennent
+# qu'a UNE SEULE entree et peuvent donc etre entierement supprimees sans
+# risque), il ne faut JAMAIS faire un rmtree() de ces dossiers partages : ca
+# emporterait aussi tout le reste du client deja installe - voire,
+# litteralement, toute l'installation pour ".".
+SHARED_ARCHIVE_EXTRACT_TARGETS = (".", "Data")
 
 
 def reset_entry(install_dir, entry):
-    """Supprime le flag "termine" et le dossier de destination d'UNE entree
-    du manifest, pour forcer son retelechargement/reinstallation complete
-    au prochain passage (equivalent programmatique du menage manuel
-    d'Aurora decrit ci-dessus, generalise a n'importe quelle entree)."""
+    """Supprime le flag "termine" d'UNE entree du manifest (et, quand on
+    peut identifier son resultat sans risque de casser autre chose, ce
+    resultat lui-meme), pour forcer son retelechargement/reinstallation
+    complete au prochain passage. Generalisation du menage manuel qu'Aurora
+    faisait a la main dans .au_cache/ et dans le dossier Data avant chaque
+    mise a jour (a l'origine fait seulement pour frFR/enUS, puis etendu a
+    TOUTES les entrees - patchs .MPQ du dossier Data, et l'archive
+    "AzerothUniverse (Additional)" a la racine du client - voir
+    reset_forced_refresh_entries ci-dessous)."""
     flag = done_flag_path(install_dir, entry["id"])
     try:
         if os.path.isfile(flag):
@@ -50,21 +69,60 @@ def reset_entry(install_dir, entry):
     except OSError:
         pass
 
-    dest_dir = os.path.normpath(os.path.join(install_dir, entry["extract_to"]))
+    # Le cache des parties .rar deja telechargees (entrees "archive") doit
+    # sauter lui aussi : sinon _install_archive() les retrouve dans
+    # .au_cache/parts/<id>/ avec la meme taille qu'avant et les considere
+    # "deja telechargees a l'identique", meme si le contenu a change cote
+    # serveur (nouvelle version publiee sous la meme URL) - exactement le
+    # probleme que ce reset est cense corriger.
+    parts_cache = parts_cache_dir_for(install_dir, entry["id"])
+    if os.path.isdir(parts_cache):
+        shutil.rmtree(parts_cache, ignore_errors=True)
+
+    if entry["kind"] == "direct":
+        # Telechargement direct d'un seul fichier (ex: common.MPQ,
+        # patch-2.MPQ...) : "target" pointe exactement vers CE fichier, on
+        # peut donc le supprimer sans toucher a rien d'autre.
+        target = os.path.normpath(os.path.join(install_dir, entry["target"]))
+        try:
+            if os.path.isfile(target):
+                os.remove(target)
+        except OSError:
+            pass
+        return
+
+    # kind == "archive"
+    extract_to = entry.get("extract_to", ".")
+    if extract_to in SHARED_ARCHIVE_EXTRACT_TARGETS:
+        # Destination partagee avec d'autres entrees : voir
+        # SHARED_ARCHIVE_EXTRACT_TARGETS ci-dessus, jamais de rmtree ici.
+        # Le flag + le cache de parties suffisent : au prochain passage,
+        # l'entree sera retelechargee et re-extraite, et
+        # extractor.move_merge() ecrasera uniquement les fichiers qu'elle
+        # produit, sans toucher au reste du dossier partage.
+        return
+
+    # Destination DEDIEE (frFR -> "Data/frFR", enUS -> "Data/enUS") :
+    # n'appartient qu'a cette seule entree, supprimable entierement sans
+    # risque, comme avant.
+    dest_dir = os.path.normpath(os.path.join(install_dir, extract_to))
     if os.path.isdir(dest_dir):
         shutil.rmtree(dest_dir, ignore_errors=True)
 
 
 def reset_forced_refresh_entries(install_dir, manifest):
-    """Applique reset_entry() a chaque entree du manifest dont l'id figure
-    dans FORCE_REFRESH_ENTRY_IDS (frFR, enUS). Renvoie la liste des ids
-    effectivement reinitialises, pour affichage dans le journal du
-    launcher."""
+    """Applique reset_entry() a CHAQUE entree du manifest (locales frFR/
+    enUS, tous les patchs .MPQ du dossier Data, et l'archive
+    "AzerothUniverse (Additional)" a la racine du client) : le clic sur
+    "Verifier" ne fait donc plus jamais confiance a un ancien marqueur
+    local et retelecharge systematiquement la derniere version publiee de
+    chaque element, comme le faisait deja Aurora a la main avant chaque
+    mise a jour. Renvoie la liste des ids reinitialises, pour affichage
+    dans le journal du launcher."""
     reset_ids = []
     for entry in manifest.get("files", []):
-        if entry["id"] in FORCE_REFRESH_ENTRY_IDS:
-            reset_entry(install_dir, entry)
-            reset_ids.append(entry["id"])
+        reset_entry(install_dir, entry)
+        reset_ids.append(entry["id"])
     return reset_ids
 
 
