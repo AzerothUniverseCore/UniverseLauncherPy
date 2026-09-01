@@ -25,7 +25,10 @@ import config
 from ui import theme
 from i18n import Translator
 from core import downloader
-from core.installer import InstallWorker, is_fully_installed, is_entry_done
+from core.installer import (
+    InstallWorker, is_fully_installed, is_entry_done,
+    reset_forced_refresh_entries,
+)
 from core import wtf as wtf_module
 from core.server_status import ServerStatusWorker
 
@@ -624,6 +627,14 @@ class AzerothLauncherWindow(QMainWindow):
         if not install_dir:
             return
         os.makedirs(install_dir, exist_ok=True)
+
+        reset_ids = reset_forced_refresh_entries(install_dir, self.manifest)
+        if reset_ids and log:
+            self._on_log(
+                "[INFO] " + ", ".join(reset_ids) +
+                " : reinitialise pour reinstallation complete."
+            )
+
         deep = self.chk_deep_verify.isChecked()
         missing = [e for e in self.manifest["files"]
                    if not is_entry_done(install_dir, e, deep_verify=deep)]

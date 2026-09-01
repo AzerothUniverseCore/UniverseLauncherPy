@@ -35,6 +35,39 @@ def done_flag_path(install_dir, entry_id):
     return os.path.join(cache_dir_for(install_dir), "done", f"{entry_id}.done")
 
 
+FORCE_REFRESH_ENTRY_IDS = ("frFR", "enUS")
+
+
+def reset_entry(install_dir, entry):
+    """Supprime le flag "termine" et le dossier de destination d'UNE entree
+    du manifest, pour forcer son retelechargement/reinstallation complete
+    au prochain passage (equivalent programmatique du menage manuel
+    d'Aurora decrit ci-dessus, generalise a n'importe quelle entree)."""
+    flag = done_flag_path(install_dir, entry["id"])
+    try:
+        if os.path.isfile(flag):
+            os.remove(flag)
+    except OSError:
+        pass
+
+    dest_dir = os.path.normpath(os.path.join(install_dir, entry["extract_to"]))
+    if os.path.isdir(dest_dir):
+        shutil.rmtree(dest_dir, ignore_errors=True)
+
+
+def reset_forced_refresh_entries(install_dir, manifest):
+    """Applique reset_entry() a chaque entree du manifest dont l'id figure
+    dans FORCE_REFRESH_ENTRY_IDS (frFR, enUS). Renvoie la liste des ids
+    effectivement reinitialises, pour affichage dans le journal du
+    launcher."""
+    reset_ids = []
+    for entry in manifest.get("files", []):
+        if entry["id"] in FORCE_REFRESH_ENTRY_IDS:
+            reset_entry(install_dir, entry)
+            reset_ids.append(entry["id"])
+    return reset_ids
+
+
 def is_entry_done(install_dir, entry, deep_verify=False):
     """`deep_verify` (case a cocher "Verification approfondie (MD5)" dans
     l'UI) : Azeroth Universe ne publie pas de sommes de controle officielles
