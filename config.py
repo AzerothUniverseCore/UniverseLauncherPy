@@ -29,7 +29,7 @@ CLIENT_BUILD = "3.3.9"
 # cette release AVANT de compiler, sinon le launcher fraichement compile se
 # proposera de se "mettre a jour" vers... lui-meme en boucle.
 LAUNCHER_UPDATE_REPO = "AzerothUniverseCore/UniverseLauncherPy"
-LAUNCHER_VERSION = "339.49449"
+LAUNCHER_VERSION = "339.49450"
 
 # Liens ouverts par les boutons SITE WEB / S'INSCRIRE de la barre du bas.
 # NOTE : seule l'URL du site principal a ete confirmee dans nos echanges
