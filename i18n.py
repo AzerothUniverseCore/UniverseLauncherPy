@@ -232,39 +232,78 @@ STRINGS = {
 }
 
 
-# Identifiants numeriques race/classe standard de WoW 3.3.5a (client Wrath
-# of the Lich King), tels que stockes dans characters.characters (colonnes
-# `race`/`class`). Traduits ici plutot que cotes serveur (status.php) pour
-# que le launcher affiche les noms dans la langue choisie par le joueur,
+# Identifiants numeriques race/classe TELS QUE DEFINIS PAR LE CORE
+# UniverseEmu (enum Races / enum Classes cote serveur, communiques par
+# Aurora), tels que stockes dans characters.characters (colonnes
+# `race`/`class`). PAS le jeu de races/classes standard de WoW 3.3.5a
+# vanilla : ce serveur est un core etendu qui ajoute par dessus des
+# races/classes "allied"/custom bien au-dela de la liste d'origine
+# (Pandaren, Worgen, Void Elf, Dracthyr, Monk, Demon Hunter, Evoker, et des
+# classes entierement custom comme Necromancer/Chronomancer/Chaos
+# Ravager...). Traduits ici plutot que cote serveur (status.php) pour que le
+# launcher affiche les noms dans la langue choisie par le joueur,
 # independamment de la langue du serveur/site web. Les identifiants absents
-# (races/classes non jouables, valeurs corrompues) retombent sur "?" plutot
-# que de faire planter l'affichage - voir Translator.race_name/class_name.
+# (RACE_NONE/CLASS_NONE = 0, valeurs commentees "SKIP" dans l'enum source,
+# ou toute valeur corrompue) retombent sur "?" plutot que de faire planter
+# l'affichage - voir Translator.race_name/class_name.
+#
+# Certains ids partagent volontairement le meme nom affiche pour les deux
+# factions (ex: Pandaren 13/14, Vulpera 19/27, Dracthyr 28/29, Nain de fer
+# noir 23/24) : le core les distingue par faction jouable, mais la fenetre
+# "Personnages en ligne" n'affiche pas la faction, donc pas besoin de deux
+# libelles differents.
 RACE_NAMES = {
     "fr": {
         1: "Humain", 2: "Orc", 3: "Nain", 4: "Elfe de la nuit", 5: "Mort-vivant",
-        6: "Tauren", 7: "Gnome", 8: "Troll", 10: "Elfe de sang", 11: "Draeneï",
+        6: "Tauren", 7: "Gnome", 8: "Troll", 9: "Gobelin", 10: "Elfe de sang",
+        11: "Draeneï", 12: "Worgen", 13: "Pandaren", 14: "Pandaren",
+        15: "Elfe de sang illidari", 16: "Elfe de la nuit illidari", 17: "Eredar",
+        18: "Elfe du Vide", 19: "Vulpera", 20: "Nocteronne",
+        21: "Draeneï illuminé", 22: "Troll zandalari", 23: "Nain de fer noir",
+        24: "Nain de fer noir", 25: "Haut-elfe", 26: "Tauren des Hautes-Terres",
+        27: "Vulpera", 28: "Dracthyr", 29: "Dracthyr", 30: "Orc Mag'har",
+        31: "Kultirien",
     },
     "en": {
         1: "Human", 2: "Orc", 3: "Dwarf", 4: "Night Elf", 5: "Undead",
-        6: "Tauren", 7: "Gnome", 8: "Troll", 10: "Blood Elf", 11: "Draenei",
+        6: "Tauren", 7: "Gnome", 8: "Troll", 9: "Goblin", 10: "Blood Elf",
+        11: "Draenei", 12: "Worgen", 13: "Pandaren", 14: "Pandaren",
+        15: "Blood Elf Illidari", 16: "Night Elf Illidari", 17: "Eredar",
+        18: "Void Elf", 19: "Vulpera", 20: "Nightborne",
+        21: "Lightforged Draenei", 22: "Zandalari Troll", 23: "Dark Iron Dwarf",
+        24: "Dark Iron Dwarf", 25: "High Elf", 26: "Highmountain Tauren",
+        27: "Vulpera", 28: "Dracthyr", 29: "Dracthyr", 30: "Mag'har Orc",
+        31: "Kul Tiran",
     },
 }
 
 CLASS_NAMES = {
     "fr": {
         1: "Guerrier", 2: "Paladin", 3: "Chasseur", 4: "Voleur", 5: "Prêtre",
-        6: "Chevalier de la mort", 7: "Chaman", 8: "Mage", 9: "Démoniste", 11: "Druide",
+        6: "Chevalier de la mort", 7: "Chaman", 8: "Mage", 9: "Démoniste",
+        10: "Mage de sang", 11: "Druide", 12: "Chevalier", 13: "Chasseur de démons",
+        14: "Moine", 15: "Dresseur", 16: "Héros", 17: "Évocateur",
+        18: "Nécromancien", 19: "Empoisonneur", 20: "Pyromancien",
+        21: "Chronomancien", 22: "Géomancien", 23: "Ravageur du Chaos",
     },
     "en": {
         1: "Warrior", 2: "Paladin", 3: "Hunter", 4: "Rogue", 5: "Priest",
-        6: "Death Knight", 7: "Shaman", 8: "Mage", 9: "Warlock", 11: "Druid",
+        6: "Death Knight", 7: "Shaman", 8: "Mage", 9: "Warlock",
+        10: "Blood Mage", 11: "Druid", 12: "Knight", 13: "Demon Hunter",
+        14: "Monk", 15: "Tamer", 16: "Hero", 17: "Evoker",
+        18: "Necromancer", 19: "Venomancer", 20: "Pyromancer",
+        21: "Chronomancer", 22: "Geomancer", 23: "Chaos Ravager",
     },
 }
 
-# Couleurs standard des classes WoW (identiques a celles utilisees par le
-# client de jeu lui-meme, l'armurerie officielle, et a peu pres tous les
-# addons/sites communautaires) : simples codes couleur publics, pas des
-# assets graphiques Blizzard. Independantes de la langue.
+# Couleurs des classes : 1-9/11 reprennent les codes standard WoW (identiques
+# a ceux du client de jeu, de l'armurerie officielle, et de la quasi-totalite
+# des addons/sites communautaires - simples codes couleur publics, pas des
+# assets graphiques Blizzard) ; 13/14/17 (Demon Hunter/Monk/Evoker) reprennent
+# aussi leurs couleurs officielles retail. Les classes ENTIEREMENT custom de
+# ce core (10, 12, 15-16, 18-23, sans equivalent officiel Blizzard) se voient
+# attribuer une couleur choisie a la main, distincte des autres classes et
+# lisible sur le fond sombre du launcher. Independant de la langue.
 CLASS_COLORS = {
     1: "#C79C6E",   # Guerrier / Warrior
     2: "#F58CBA",   # Paladin
@@ -275,7 +314,20 @@ CLASS_COLORS = {
     7: "#0070DE",   # Chaman / Shaman
     8: "#69CCF0",   # Mage
     9: "#9482C9",   # Demoniste / Warlock
+    10: "#C9425F",  # Mage de sang / Blood Mage (custom)
     11: "#FF7D0A",  # Druide / Druid
+    12: "#8FA8C4",  # Chevalier / Knight (custom)
+    13: "#A330C9",  # Chasseur de demons / Demon Hunter (couleur officielle)
+    14: "#00FF96",  # Moine / Monk (couleur officielle)
+    15: "#D69A5D",  # Dresseur / Tamer (custom)
+    16: "#FFD700",  # Heros / Hero (custom)
+    17: "#33937F",  # Evocateur / Evoker (couleur officielle)
+    18: "#9BAF8B",  # Necromancien / Necromancer (custom)
+    19: "#8FBC3F",  # Empoisonneur / Venomancer (custom)
+    20: "#FF6B35",  # Pyromancien / Pyromancer (custom)
+    21: "#8676E0",  # Chronomancien / Chronomancer (custom)
+    22: "#A97C50",  # Geomancien / Geomancer (custom)
+    23: "#B0289A",  # Ravageur du Chaos / Chaos Ravager (custom)
 }
 DEFAULT_CLASS_COLOR = "#9aa0ad"  # TEXT_SECONDARY (ui/theme.py) - classe inconnue
 
