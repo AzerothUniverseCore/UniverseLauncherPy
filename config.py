@@ -14,7 +14,7 @@ import json
 import platform
 
 APP_NAME = "Azeroth Universe Launcher"
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 
 # Numero de build affiche dans la barre de titre ("build 3.3.9"), aligne sur
 # le numero de version d'UniverseEmu (3.3.9a.49448 dans son README). Purement
