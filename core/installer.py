@@ -187,16 +187,97 @@ def reset_forced_refresh_entries(install_dir, manifest):
     return reset_ids
 
 
+def _sha256_file(path, chunk_size=1024 * 1024):
+    """SHA256 d'un fichier local, calcule par blocs (jamais tout en memoire -
+    important pour les gros .MPQ, plusieurs centaines de Mo)."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while True:
+            chunk = f.read(chunk_size)
+            if not chunk:
+                break
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _read_done_marker(flag_path):
+    """Lit un marqueur .done au format JSON ecrit par _mark_done() (voir
+    InstallWorker._mark_done ci-dessous). Renvoie None si le fichier est
+    absent, illisible, ou dans l'ANCIEN format ("ok" en texte brut, ecrit par
+    les versions du launcher d'avant ce correctif) : dans ce cas l'appelant
+    (is_entry_done, en verification approfondie) n'a aucune empreinte a
+    comparer et doit se rabattre sur un comportement prudent."""
+    try:
+        with open(flag_path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except OSError:
+        return None
+    try:
+        data = json.loads(content)
+    except (json.JSONDecodeError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _remote_metadata_matches(recorded, current):
+    """Compare l'empreinte distante enregistree lors du dernier
+    telechargement reussi (voir _mark_done) a l'etat ACTUEL du serveur
+    (voir downloader.get_remote_metadata). On utilise le premier identifiant
+    fiable disponible DES DEUX COTES, dans l'ordre : ETag (le plus fiable -
+    change des qu'un seul octet change dans le fichier distant), puis
+    Last-Modified, puis Content-Length en dernier recours (le moins fiable :
+    un remplacement peut coincider avec exactement la meme taille - mais
+    mieux que rien si le serveur/CDN ne renvoie ni ETag ni Last-Modified).
+    Si AUCUN identifiant exploitable n'est disponible des deux cotes a la
+    fois, on ne peut rien affirmer avec certitude : on considere alors, par
+    prudence, que ca NE correspond PAS - ca force une reverification/
+    retelechargement plutot que de laisser passer silencieusement un
+    fichier qu'on ne sait plus authentifier."""
+    for key in ("etag", "last_modified", "content_length"):
+        r = recorded.get(key)
+        c = current.get(key)
+        if r is not None and c is not None:
+            return r == c
+    return False
+
+
 def is_entry_done(install_dir, entry, deep_verify=False):
-    """`deep_verify` (case a cocher "Verification approfondie (MD5)" dans
-    l'UI) : Azeroth Universe ne publie pas de sommes de controle officielles
-    pour ses fichiers, donc une vraie verification MD5 n'est pas possible
-    ici. En guise de verification renforcee "au mieux", on recompare, pour
-    les fichiers .MPQ en telechargement direct seulement, la taille locale
-    a la taille annoncee par le serveur (HEAD Content-Length) : un fichier
-    tronque/corrompu aura presque toujours une taille differente. Les
-    archives ne sont pas re-verifiees ainsi (on ne conserve pas leurs
-    parties .rar une fois extraites, donc rien a re-comparer)."""
+    """`deep_verify` (case a cocher "Verification approfondie" dans l'UI).
+
+    BUG CORRIGE (aout/septembre 2026) : le marqueur .done ne contenait
+    auparavant que le texte "ok" - une fois pose, une entree (frFR, enUS,
+    patch-X.MPQ...) etait consideree a jamais a jour, MEME si le fichier
+    correspondant avait ete REMPLACE depuis sur GitHub sous LA MEME URL
+    (upload qui ecrase une release existante - le cas vecu : republier
+    frFR.part1.rar/part2.rar avec un contenu different mais le meme nom).
+    Pire : pour les entrees "archive", aucune reverification n'existait meme
+    en mode "approfondi" (on ne conserve pas les .rar une fois extraits,
+    donc il n'y avait litteralement rien a comparer) - seuls les fichiers
+    "direct" (.MPQ telecharges seuls) etaient re-verifies, et uniquement par
+    taille.
+
+    Le marqueur .done contient desormais un JSON ecrit par
+    InstallWorker._mark_done() : pour chaque URL source de l'entree (le
+    fichier direct, ou toutes les "parts" d'une archive), l'ETag/
+    Last-Modified/Content-Length observes cote serveur au moment ou le
+    telechargement a reussi (Azeroth Universe ne publie pas de MD5/SHA256
+    officiels, donc pas de "vraie" empreinte de reference possible - voir
+    downloader.get_remote_metadata pour le detail de ce choix), plus un
+    SHA256 LOCAL pour les fichiers "direct" (verification d'integrite locale,
+    en plus de la comparaison distante).
+
+    En verification approfondie, on recompare donc maintenant, pour TOUTE
+    entree (direct ET archive) : l'empreinte distante enregistree contre
+    l'etat actuel du serveur (HEAD, tres bon marche - voir
+    _remote_metadata_matches) ; et, pour les fichiers "direct" en plus, le
+    SHA256 local recalcule (detecte aussi une corruption/alteration
+    purement locale, independante du serveur).
+
+    Un marqueur dans l'ANCIEN format ("ok" texte brut, pose par une version
+    du launcher d'avant ce correctif) n'a aucune empreinte a comparer : en
+    verification approfondie, il est traite comme PAS a jour (force UNE
+    SEULE reinstallation complete de cette entree, apres quoi le nouveau
+    marqueur JSON permettra de vraies comparaisons futures)."""
     flag = done_flag_path(install_dir, entry["id"])
     if not os.path.isfile(flag):
         return False
@@ -205,11 +286,31 @@ def is_entry_done(install_dir, entry, deep_verify=False):
         target = os.path.join(install_dir, entry["target"])
         if not os.path.isfile(target):
             return False
-        if deep_verify:
-            remote_size = downloader.get_remote_size(entry["url"])
-            if remote_size is not None and os.path.getsize(target) != remote_size:
-                return False
+
+    if not deep_verify:
         return True
+
+    data = _read_done_marker(flag)
+    if data is None:
+        return False
+
+    for record in data.get("remote") or []:
+        url = record.get("url")
+        if not url:
+            return False
+        current = downloader.get_remote_metadata(url)
+        if not _remote_metadata_matches(record, current):
+            return False
+
+    if entry["kind"] == "direct":
+        stored_hash = data.get("sha256")
+        if stored_hash:
+            target = os.path.join(install_dir, entry["target"])
+            try:
+                if _sha256_file(target) != stored_hash:
+                    return False
+            except OSError:
+                return False
 
     return True
 
@@ -226,7 +327,27 @@ class InstallWorker(QThread):
     sig_status = Signal(str, dict)
     sig_log = Signal(str)
     sig_overall_progress = Signal(int, int)              # (fait, total)
-    sig_file_progress = Signal(str, int, object)         # (nom, recu, total|None)
+    # BUG FIX (barre de progression/pourcentage qui redevient vide et
+    # affiche un pourcentage NEGATIF passe un certain point - constate sur
+    # frFR/enUS) : le "recu" ci-dessous etait declare Signal(..., int, ...).
+    # Un Signal PySide type explicitement "int" est marshalle en entier C
+    # 32 bits SIGNE lors de la traversee thread-a-thread (borne a environ
+    # 2,147 Go) - PAS un entier Python a precision arbitraire. Tant que
+    # chaque telechargement restait sous cette limite (c'etait le cas avant
+    # le decoupage en plusieurs "parts"/segments en parallele - voir
+    # core/downloader.py : chaque "part" seule de frFR/enUS, ~1 Go, passait
+    # sous le plafond), aucun souci. Mais l'agregation du nombre d'octets
+    # recus a travers PLUSIEURS parties en parallele (voir
+    # _install_archive/make_progress_cb ci-dessous) fait tres vite depasser
+    # 2,147 Go pour une archive de ~2 Go au total (frFR/enUS) : la valeur
+    # deborde alors en negatif au milieu du telechargement, d'ou le
+    # pourcentage negatif observe et la barre qui retombe a 0 (voir
+    # ui/main_window.py::_on_file_progress, dont le calcul de fraction se
+    # borne a 0 quand le total agrege deborde lui aussi en negatif). "object"
+    # transporte la valeur Python telle quelle (entier a precision
+    # arbitraire), sans aucune conversion/troncature C - le correctif
+    # s'applique aussi bien au nombre d'octets recus qu'au total.
+    sig_file_progress = Signal(str, object, object)     # (nom, recu, total|None)
     sig_finished = Signal(bool, str, dict)                # (succes, cle, kwargs)
 
     def __init__(self, manifest, install_dir, realmlist_address, deep_verify=False, parent=None):
@@ -262,10 +383,34 @@ class InstallWorker(QThread):
         return is_entry_done(self.install_dir, entry, deep_verify=self.deep_verify)
 
     def _mark_done(self, entry):
+        # BUG FIX (voir is_entry_done ci-dessus pour le detail) : on
+        # n'ecrit plus juste "ok", mais une empreinte JSON permettant de
+        # detecter plus tard qu'un fichier a ete remplace sur GitHub sous
+        # la meme URL. Cout : une requete HEAD de plus par URL source
+        # (fichier direct, ou chaque "part" d'une archive) - negligeable,
+        # faite une seule fois ici, juste apres un telechargement/une
+        # installation qui vient de reussir.
+        urls = [entry["url"]] if entry["kind"] == "direct" else list(entry["parts"])
+        data = {
+            "remote": [
+                {"url": url, **downloader.get_remote_metadata(url)}
+                for url in urls
+            ],
+        }
+
+        if entry["kind"] == "direct":
+            target = os.path.join(self.install_dir, entry["target"])
+            try:
+                data["sha256"] = _sha256_file(target)
+            except OSError:
+                # Pas bloquant : le marqueur reste ecrit sans SHA256 local,
+                # la comparaison distante (ci-dessus) reste operante seule.
+                pass
+
         flag = done_flag_path(self.install_dir, entry["id"])
         os.makedirs(os.path.dirname(flag), exist_ok=True)
         with open(flag, "w", encoding="utf-8") as f:
-            f.write("ok")
+            json.dump(data, f)
 
     def _check_cancel(self):
         if self._cancel_event.is_set():
@@ -347,7 +492,12 @@ class InstallWorker(QThread):
             self.sig_file_progress.emit(name, downloaded, total_bytes)
 
         self._check_cancel()
-        downloader.download_file(
+        # Segmente en plusieurs connexions quand le fichier/serveur s'y
+        # pretent (voir le point 4 de la note en tete de core/downloader.py)
+        # - se rabat seul sur une connexion unique sinon (petit fichier,
+        # taille inconnue, ou serveur qui n'annonce pas le support des
+        # requetes par plage).
+        downloader.download_file_segmented(
             entry["url"], target, progress_cb=progress_cb,
             cancel_event=self._cancel_event, pause_event=self._pause_event,
         )
@@ -360,12 +510,74 @@ class InstallWorker(QThread):
         cache_dir = os.path.join(self._cache_dir(), "parts", entry["id"])
         os.makedirs(cache_dir, exist_ok=True)
 
+        # Progression combinee de TOUTES les parties en cours de
+        # telechargement EN PARALLELE (voir downloader.download_files_parallel
+        # plus bas, et la note "Debit (aout 2026)" en tete de
+        # core/downloader.py) : plusieurs parties progressent en meme temps,
+        # sur des threads differents, donc on additionne leurs octets
+        # recus/totaux a chaque mise a jour pour n'emettre qu'UNE SEULE
+        # progression/vitesse globale vers l'UI (sig_file_progress garde le
+        # meme nom "entree", `name`, du debut a la fin) plutot que de faire
+        # clignoter l'affichage entre plusieurs parties qui avancent en
+        # meme temps. Bonus : la vitesse affichee est ainsi le debit AGREGE
+        # reel de toutes les connexions, ce qui est justement le chiffre qui
+        # interesse le joueur.
+        # BUG FIX (vitesse affichee erratique - "ca monte, ca descend, c'est
+        # aleatoire") : chaque download_file() a SON PROPRE throttle interne
+        # ("pas plus souvent que toutes les ~0.1s", voir downloader.py) qui
+        # ignore completement les autres threads. Avec 4 parties en
+        # parallele, ca donnait donc jusqu'a 4 emissions independantes et
+        # PAS SYNCHRONISEES toutes les ~0.1s chacune : cote UI (main_window.
+        # _on_file_progress), la vitesse est calculee comme un delta
+        # d'octets divise par le delta de TEMPS ECOULE entre deux emissions
+        # consecutives - or avec 4 threads qui se decalent les uns par
+        # rapport aux autres, ces emissions arrivaient parfois quasi
+        # groupees (delta de temps tres petit -> vitesse instantanee
+        # demesuree) et parfois espacees (delta plus grand -> vitesse qui
+        # semble chuter), d'ou l'impression de valeur aleatoire malgre le
+        # lissage (moyenne mobile) deja applique cote UI, qui n'etait pas
+        # concu pour un rythme d'emission aussi irregulier.
+        #
+        # On limite donc ICI, cote emission (donc independamment du nombre
+        # de parties en parallele), a UNE SEULE emission agregee toutes les
+        # PROGRESS_EMIT_INTERVAL secondes au maximum - peu importe combien
+        # de threads ont progresse entre-temps, on envoie a chaque fois
+        # l'etat cumule le plus recent. Le rythme redevient ainsi regulier
+        # (comme un telechargement a une seule connexion), ce qui est
+        # justement ce que le calcul de vitesse cote UI attend pour donner
+        # une courbe stable plutot que des a-coups.
+        PROGRESS_EMIT_INTERVAL = 0.15  # secondes
+
+        progress_lock = threading.Lock()
+        part_progress = {}  # index de partie -> [downloaded, total_or_None]
+        emit_state = {"last_emit": 0.0}
+
+        def make_progress_cb(idx):
+            def _cb(downloaded, total_bytes):
+                now = time.time()
+                with progress_lock:
+                    part_progress[idx] = [downloaded, total_bytes]
+                    # On force quand meme une emission des qu'UNE partie
+                    # termine (downloaded >= total_bytes) meme si le delai
+                    # n'est pas ecoule : sinon l'affichage final (100%) peut
+                    # accuser un petit retard visible, notamment sur la
+                    # toute derniere partie qui cloture l'ensemble.
+                    part_finished = bool(total_bytes) and downloaded >= total_bytes
+                    if (now - emit_state["last_emit"]) < PROGRESS_EMIT_INTERVAL and not part_finished:
+                        return
+                    emit_state["last_emit"] = now
+                    snapshot = list(part_progress.values())
+                dl_sum = sum(v[0] for v in snapshot)
+                totals = [v[1] for v in snapshot]
+                total_sum = sum(totals) if all(t is not None for t in totals) else None
+                self.sig_file_progress.emit(name, dl_sum, total_sum)
+            return _cb
+
         local_parts = []
+        jobs = []
         for i, url in enumerate(parts, start=1):
             self._check_cancel()
-            self._wait_if_paused()
             part_label = f"{name} ({i}/{total_parts})" if total_parts > 1 else name
-            self.sig_status.emit("status_downloading", {"name": part_label})
             local_path = os.path.join(cache_dir, os.path.basename(url))
             local_parts.append(local_path)
 
@@ -375,12 +587,19 @@ class InstallWorker(QThread):
                     self.sig_log.emit(f"[OK] {part_label} deja telecharge, ignore.")
                     continue
 
-            def progress_cb(downloaded, total_bytes, _label=part_label):
-                self.sig_file_progress.emit(_label, downloaded, total_bytes)
+            jobs.append({"url": url, "dest_path": local_path, "progress_cb": make_progress_cb(i)})
 
-            downloader.download_file(
-                url, local_path, progress_cb=progress_cb,
-                cancel_event=self._cancel_event, pause_event=self._pause_event,
+        if jobs:
+            self._wait_if_paused()
+            self._check_cancel()
+            self.sig_status.emit("status_downloading", {"name": name})
+            # Plusieurs "parts" telechargees EN PARALLELE (connexions HTTP
+            # separees) au lieu d'une par une : voir la note "Debit (aout
+            # 2026)" en tete de core/downloader.py pour pourquoi une seule
+            # connexion a la fois plafonnait le debit bien en dessous de ce
+            # que la ligne du joueur permet reellement.
+            downloader.download_files_parallel(
+                jobs, cancel_event=self._cancel_event, pause_event=self._pause_event,
             )
 
         self._check_cancel()

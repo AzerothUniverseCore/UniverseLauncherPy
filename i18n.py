@@ -21,12 +21,15 @@ STRINGS = {
         "news_header": "Actualités",
         "client_folder_header": "Dossier client",
         "journal_header": "Journal",
-        "deep_verify_checkbox": "Vérification approfondie (MD5)",
+        "deep_verify_checkbox": "Vérification approfondie",
         "deep_verify_tooltip": (
-            "Recontrôle en plus la taille annoncée par le serveur pour les "
-            "fichiers .MPQ déjà téléchargés (une vérification MD5 complète "
+            "Recontrôle en plus, pour chaque fichier/archive déjà "
+            "téléchargé, si le contenu a changé sur le serveur depuis "
+            "(utile si des patchs sont republiés sous le même nom) : "
+            "empreinte serveur (ETag/date de modification/taille), plus le "
+            "SHA256 local pour les .MPQ (une vérification MD5 officielle "
             "n'est pas possible : Azeroth Universe ne publie pas de sommes "
-            "de contrôle officielles pour l'instant)."
+            "de contrôle pour l'instant)."
         ),
         "btn_website": "Site web",
         "btn_register": "S'inscrire",
@@ -130,10 +133,13 @@ STRINGS = {
         "news_header": "News",
         "client_folder_header": "Client folder",
         "journal_header": "Log",
-        "deep_verify_checkbox": "Deep verification (MD5)",
+        "deep_verify_checkbox": "Deep verification",
         "deep_verify_tooltip": (
-            "Also re-checks the size reported by the server for .MPQ files "
-            "that are already downloaded (a full MD5 check isn't possible: "
+            "Also re-checks, for every already-downloaded file/archive, "
+            "whether the content changed on the server since (useful when "
+            "patches get re-uploaded under the same name): server "
+            "fingerprint (ETag/last-modified/size), plus a local SHA256 "
+            "for .MPQ files (a full official MD5 check isn't possible: "
             "Azeroth Universe doesn't publish official checksums yet)."
         ),
         "btn_website": "Website",
