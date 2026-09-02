@@ -8,12 +8,24 @@ interroge l'API GitHub Releases du depot du launcher
 differe de la version actuellement executee, on propose de telecharger et
 d'appliquer cette nouvelle version.
 
-Comparaison de version volontairement simple (egalite de chaine, pas de
-parsing semver) : les tags de ce depot suivent un format propre au projet
-(ex: "339.49448", aligne sur des numeros de build), pas un schema
-major.minor.patch classique. Une simple inegalite suffit a detecter une
-nouvelle release et reste correcte quel que soit le format de tag choisi a
-l'avenir.
+Comparaison de version : on essaie d'abord une comparaison NUMERIQUE (les
+tags de ce depot suivent un format propre au projet, ex: "339.49448", pas
+un schema major.minor.patch classique, mais restent des groupes de chiffres
+separes par des points - on les compare donc comme des tuples d'entiers,
+"339.49449" > "339.49448"). Ce n'est QUE si l'un des deux ne ressemble pas
+du tout a ca (aucun chiffre dedans) qu'on retombe sur une simple inegalite
+de chaine, pour rester compatible avec un format de tag totalement
+different a l'avenir.
+
+Pourquoi pas une simple inegalite partout (comme avant) : pendant les tests
+en local, il est frequent d'avancer LAUNCHER_VERSION dans config.py AVANT
+de publier la release GitHub correspondante (ex: passer a "339.49449" en
+prevision de la prochaine build, alors que "339.49448" est encore la
+derniere release publiee). Avec une simple inegalite, le launcher proposait
+alors de "mettre a jour" vers une version PLUS ANCIENNE que celle en cours
+d'execution - source de confusion. La comparaison numerique evite ça : elle
+ne propose une mise a jour que si la release GitHub est reellement PLUS
+RECENTE que la version executee.
 
 CONTRAINTE WINDOWS INCONTOURNABLE : le launcher compile (PyInstaller
 --onefile, voir build/launcher.spec) tourne depuis un unique .exe verrouille
@@ -37,6 +49,7 @@ pas tentee : on se contente de signaler qu'une mise a jour existe.
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -95,8 +108,39 @@ def fetch_latest_release(repo, timeout=GITHUB_API_TIMEOUT):
     return tag, asset_url
 
 
+def _version_tuple(version_str):
+    """Extrait tous les groupes de chiffres d'une chaine de version
+    ("339.49448" -> (339, 49448)) pour une comparaison numerique. Renvoie
+    None si la chaine ne contient AUCUN chiffre (format totalement
+    different) : le seul cas ou l'appelant doit retomber sur une simple
+    comparaison d'egalite."""
+    if not version_str:
+        return None
+    digits = re.findall(r"\d+", str(version_str))
+    if not digits:
+        return None
+    return tuple(int(d) for d in digits)
+
+
 def is_update_available(current_version, latest_tag):
-    return bool(latest_tag) and latest_tag != current_version
+    if not latest_tag:
+        return False
+
+    current_tuple = _version_tuple(current_version)
+    latest_tuple = _version_tuple(latest_tag)
+    if current_tuple is not None and latest_tuple is not None:
+        # Comparaison numerique : ne propose une mise a jour QUE si la
+        # release GitHub est reellement plus recente (evite de proposer de
+        # "revenir" a une version anterieure quand la version locale a ete
+        # avancee en prevision d'une prochaine publication - voir le
+        # docstring de ce module).
+        return latest_tuple > current_tuple
+
+    # Fallback : au moins l'une des deux chaines ne contient aucun chiffre
+    # exploitable, on ne peut pas comparer numeriquement. Ancien
+    # comportement (simple inegalite) conserve pour ne rien casser sur un
+    # format de tag inattendu.
+    return latest_tag != current_version
 
 
 class UpdateCheckWorker(QThread):

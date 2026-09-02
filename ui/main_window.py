@@ -323,7 +323,13 @@ class AzerothLauncherWindow(QMainWindow):
 
         self.lbl_titlebar = QLabel()
         self.lbl_titlebar.setObjectName("TitleBarLabel")
-        self.lbl_titlebar_build = QLabel(f"build {config.CLIENT_BUILD}")
+        # Version du LAUNCHER ajoutee a cote du build client ("build 3.3.9 -
+        # launcher 339.49449") : avant cet ajout, rien a l'ecran ne
+        # permettait de verifier a l'oeil qu'une mise a jour du launcher
+        # (voir core/updater.py) avait bien ete appliquee - deux builds du
+        # launcher se ressemblent generalement a l'identique visuellement.
+        self.lbl_titlebar_build = QLabel(
+            f"build {config.CLIENT_BUILD} — launcher {config.LAUNCHER_VERSION}")
         self.lbl_titlebar_build.setObjectName("TitleBarBuild")
         layout.addWidget(self.lbl_titlebar)
         layout.addWidget(self.lbl_titlebar_build)
