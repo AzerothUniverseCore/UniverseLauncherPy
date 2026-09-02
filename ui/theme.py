@@ -65,6 +65,35 @@ QMessageBox QLabel {{
     color: {TEXT_PRIMARY};
 }}
 
+/* QDialog (fenetre "Personnages en ligne") : meme raisonnement que
+   QMessageBox juste au-dessus - c'est une fenetre a part avec sa propre
+   decoration systeme, la regle generale QWidget (fond transparent)
+   s'appliquerait sinon a elle aussi. */
+QDialog {{
+    background-color: {BG_PANEL};
+}}
+
+#OnlineCharactersEmpty {{
+    color: {TEXT_SECONDARY};
+    font-size: 12px;
+}}
+
+#CharacterRow {{
+    background-color: {BG_PANEL_SOFT};
+    border: 1px solid {BORDER_SOFT};
+    border-radius: 6px;
+}}
+
+#CharacterName {{
+    font-weight: 700;
+    font-size: 13px;
+}}
+
+#CharacterSubtitle {{
+    color: {TEXT_SECONDARY};
+    font-size: 11px;
+}}
+
 QMainWindow {{
     background-color: {BG_DARK};
 }}

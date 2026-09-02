@@ -14,12 +14,12 @@ import sys
 import time
 import subprocess
 
-from PySide6.QtCore import Qt, QSize, QUrl, QTimer
+from PySide6.QtCore import Qt, QSize, QUrl, QTimer, Signal
 from PySide6.QtGui import QPixmap, QIcon, QDesktopServices, QPainterPath, QRegion
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QCheckBox,
     QProgressBar, QPlainTextEdit, QFileDialog, QMessageBox, QVBoxLayout,
-    QHBoxLayout, QFrame, QScrollArea, QButtonGroup, QStackedLayout,
+    QHBoxLayout, QFrame, QScrollArea, QButtonGroup, QStackedLayout, QDialog,
 )
 
 import config
@@ -80,6 +80,103 @@ class TitleBar(QWidget):
         self._drag_pos = None
 
 
+class ClickableFrame(QFrame):
+    """QFrame qui emet `clicked` sur un clic gauche - utilise pour le badge
+    de statut serveur (voir _build_status_badge), qui n'est pas un
+    QPushButton (son style visuel de "carte" ne colle pas a celui des
+    boutons de l'appli) mais doit quand meme reagir au clic pour ouvrir la
+    liste des personnages en ligne."""
+    clicked = Signal()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
+
+
+class OnlineCharactersDialog(QDialog):
+    """Fenetre "Personnages en ligne", ouverte en cliquant sur le badge de
+    statut serveur. Reprend le meme motif visuel que le panneau
+    "Actualites" (une carte par entree dans une zone defilante) plutot que
+    d'introduire un nouveau composant Qt (QListWidget, QTableView...) pour
+    un besoin somme toute simple - liste courte de lignes texte."""
+
+    def __init__(self, tr_, characters, status_configured, status_online, parent=None):
+        super().__init__(parent)
+        self.tr_ = tr_
+        t = tr_.t
+        self.setWindowTitle(t("online_characters_title"))
+        self.setMinimumSize(360, 420)
+        self.resize(360, 480)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(10)
+
+        header = QLabel(t("online_characters_title"))
+        header.setObjectName("CardHeader")
+        layout.addWidget(header)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        container = QWidget()
+        rows_layout = QVBoxLayout(container)
+        rows_layout.setSpacing(8)
+
+        if not status_configured or not status_online:
+            empty = QLabel(t("online_characters_unavailable"))
+            empty.setObjectName("OnlineCharactersEmpty")
+            empty.setWordWrap(True)
+            rows_layout.addWidget(empty)
+        elif not characters:
+            empty = QLabel(t("online_characters_empty"))
+            empty.setObjectName("OnlineCharactersEmpty")
+            empty.setWordWrap(True)
+            rows_layout.addWidget(empty)
+        else:
+            # Deja triee par niveau decroissant cote serveur (voir
+            # status.php), mais on ne fait pas confiance a un endpoint
+            # tiers pour garder ce comportement - un petit tri defensif ici
+            # ne coute rien pour au plus quelques centaines d'entrees.
+            for char in sorted(characters, key=lambda c: c["level"], reverse=True):
+                rows_layout.addWidget(self._build_character_row(char))
+
+        rows_layout.addStretch(1)
+        scroll.setWidget(container)
+        layout.addWidget(scroll, 1)
+
+        btn_close = QPushButton(t("btn_close"))
+        btn_close.setObjectName("OutlineButton")
+        btn_close.clicked.connect(self.accept)
+        close_row = QHBoxLayout()
+        close_row.addStretch(1)
+        close_row.addWidget(btn_close)
+        layout.addLayout(close_row)
+
+    def _build_character_row(self, char):
+        row = QFrame()
+        row.setObjectName("CharacterRow")
+        row.setAttribute(Qt.WA_StyledBackground, True)
+        row_layout = QVBoxLayout(row)
+        row_layout.setContentsMargins(12, 8, 12, 8)
+        row_layout.setSpacing(2)
+
+        name = QLabel(char["name"])
+        name.setObjectName("CharacterName")
+        name.setStyleSheet(f"color: {self.tr_.class_color(char['class'])};")
+        row_layout.addWidget(name)
+
+        subtitle = QLabel(self.tr_.t(
+            "character_row_subtitle", level=char["level"],
+            race=self.tr_.race_name(char["race"]),
+            class_name=self.tr_.class_name(char["class"])))
+        subtitle.setObjectName("CharacterSubtitle")
+        row_layout.addWidget(subtitle)
+
+        return row
+
+
 class AzerothLauncherWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -101,6 +198,14 @@ class AzerothLauncherWindow(QMainWindow):
         self._entries_done = 0
         self._entries_total = 0
         self._is_paused = False
+        # Dernier resultat connu du badge de statut serveur (voir
+        # _on_status_result) : reutilise tel quel par
+        # _on_status_badge_clicked, plutot que de refaire une requete reseau
+        # a chaque clic - le badge est deja rafraichi periodiquement par
+        # _status_timer (config.STATUS_POLL_INTERVAL_MS).
+        self._status_configured = False
+        self._status_online = None
+        self._last_characters = []
 
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         # Necessaire pour que les coins arrondis (voir _apply_rounded_mask)
@@ -279,15 +384,20 @@ class AzerothLauncherWindow(QMainWindow):
         return layout
 
     def _build_status_badge(self):
-        badge = QFrame()
+        # ClickableFrame (pas un simple QFrame) : le badge ouvre la liste
+        # des personnages en ligne au clic (voir _on_status_badge_clicked).
+        badge = ClickableFrame()
         badge.setObjectName("StatusBadge")
         badge.setAttribute(Qt.WA_StyledBackground, True)
+        badge.setCursor(Qt.PointingHandCursor)
+        badge.clicked.connect(self._on_status_badge_clicked)
         # Largeur minimale fixe plutot que purement basee sur le sizeHint du
         # texte courant : evite un badge qui reste trop etroit et coupe le
         # texte apres un changement de langue a chaud (le libelle le plus
         # long, "Status not configured"/"Statut non configure", doit tenir
         # sans qu'on ait besoin de forcer un recalcul de layout a la main).
         badge.setMinimumWidth(220)
+        self.status_badge = badge
         layout = QHBoxLayout(badge)
         layout.setContentsMargins(12, 8, 14, 8)
         layout.setSpacing(8)
@@ -549,6 +659,7 @@ class AzerothLauncherWindow(QMainWindow):
         self.btn_website.setText(t("btn_website"))
         self.btn_register.setText(t("btn_register"))
         self.btn_check.setText(t("btn_check"))
+        self.status_badge.setToolTip(t("status_badge_tooltip"))
         self._refresh_pause_button()
         self._refresh_news()
         self._refresh_status_badge_text()
@@ -600,14 +711,23 @@ class AzerothLauncherWindow(QMainWindow):
         self.status_worker.sig_result.connect(self._on_status_result)
         self.status_worker.start()
 
-    def _on_status_result(self, configured, online, players):
+    def _on_status_result(self, configured, online, players, characters):
         if not configured:
             self.status_dot.setProperty("state", "unknown")
         else:
             self.status_dot.setProperty("state", "online" if online else "offline")
         self._last_players = players
+        self._status_configured = configured
+        self._status_online = online
+        self._last_characters = characters
         self._repolish(self.status_dot)
         self._refresh_status_badge_text()
+
+    def _on_status_badge_clicked(self):
+        dialog = OnlineCharactersDialog(
+            self.tr_, self._last_characters, self._status_configured,
+            self._status_online, parent=self)
+        dialog.exec()
 
     # ------------------------------------------------------------------
     # Mise a jour du launcher (voir core/updater.py - ne concerne PAS le

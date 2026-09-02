@@ -111,6 +111,16 @@ STRINGS = {
             "Mise à jour du launcher disponible ({tag}), mais l'installation "
             "automatique n'est possible que depuis l'exécutable compilé."
         ),
+        "status_badge_tooltip": "Cliquez pour voir les personnages en ligne.",
+        "online_characters_title": "Personnages en ligne",
+        "online_characters_count": "{count} personnage(s) en ligne",
+        "online_characters_empty": "Aucun personnage en ligne pour le moment.",
+        "online_characters_unavailable": (
+            "La liste des personnages en ligne n'est pas disponible pour "
+            "l'instant (statut serveur non configuré ou hors ligne)."
+        ),
+        "character_row_subtitle": "Niveau {level} — {race} {class_name}",
+        "btn_close": "Fermer",
     },
     "en": {
         "app_title": "Azeroth Universe - Launcher",
@@ -208,8 +218,66 @@ STRINGS = {
             "A launcher update is available ({tag}), but automatic "
             "installation only works from the compiled executable."
         ),
+        "status_badge_tooltip": "Click to see who's currently online.",
+        "online_characters_title": "Online characters",
+        "online_characters_count": "{count} character(s) online",
+        "online_characters_empty": "No character is online right now.",
+        "online_characters_unavailable": (
+            "The online character list isn't available right now (server "
+            "status not configured or offline)."
+        ),
+        "character_row_subtitle": "Level {level} — {race} {class_name}",
+        "btn_close": "Close",
     },
 }
+
+
+# Identifiants numeriques race/classe standard de WoW 3.3.5a (client Wrath
+# of the Lich King), tels que stockes dans characters.characters (colonnes
+# `race`/`class`). Traduits ici plutot que cotes serveur (status.php) pour
+# que le launcher affiche les noms dans la langue choisie par le joueur,
+# independamment de la langue du serveur/site web. Les identifiants absents
+# (races/classes non jouables, valeurs corrompues) retombent sur "?" plutot
+# que de faire planter l'affichage - voir Translator.race_name/class_name.
+RACE_NAMES = {
+    "fr": {
+        1: "Humain", 2: "Orc", 3: "Nain", 4: "Elfe de la nuit", 5: "Mort-vivant",
+        6: "Tauren", 7: "Gnome", 8: "Troll", 10: "Elfe de sang", 11: "Draeneï",
+    },
+    "en": {
+        1: "Human", 2: "Orc", 3: "Dwarf", 4: "Night Elf", 5: "Undead",
+        6: "Tauren", 7: "Gnome", 8: "Troll", 10: "Blood Elf", 11: "Draenei",
+    },
+}
+
+CLASS_NAMES = {
+    "fr": {
+        1: "Guerrier", 2: "Paladin", 3: "Chasseur", 4: "Voleur", 5: "Prêtre",
+        6: "Chevalier de la mort", 7: "Chaman", 8: "Mage", 9: "Démoniste", 11: "Druide",
+    },
+    "en": {
+        1: "Warrior", 2: "Paladin", 3: "Hunter", 4: "Rogue", 5: "Priest",
+        6: "Death Knight", 7: "Shaman", 8: "Mage", 9: "Warlock", 11: "Druid",
+    },
+}
+
+# Couleurs standard des classes WoW (identiques a celles utilisees par le
+# client de jeu lui-meme, l'armurerie officielle, et a peu pres tous les
+# addons/sites communautaires) : simples codes couleur publics, pas des
+# assets graphiques Blizzard. Independantes de la langue.
+CLASS_COLORS = {
+    1: "#C79C6E",   # Guerrier / Warrior
+    2: "#F58CBA",   # Paladin
+    3: "#ABD473",   # Chasseur / Hunter
+    4: "#FFF569",   # Voleur / Rogue
+    5: "#FFFFFF",   # Pretre / Priest
+    6: "#C41F3B",   # Chevalier de la mort / Death Knight
+    7: "#0070DE",   # Chaman / Shaman
+    8: "#69CCF0",   # Mage
+    9: "#9482C9",   # Demoniste / Warlock
+    11: "#FF7D0A",  # Druide / Druid
+}
+DEFAULT_CLASS_COLOR = "#9aa0ad"  # TEXT_SECONDARY (ui/theme.py) - classe inconnue
 
 
 # Actualités affichées dans le panneau "Actualités" du launcher. Statique
@@ -262,3 +330,12 @@ class Translator:
 
     def news(self):
         return NEWS_ITEMS.get(self.lang, NEWS_ITEMS["fr"])
+
+    def race_name(self, race_id):
+        return RACE_NAMES.get(self.lang, RACE_NAMES["fr"]).get(race_id, "?")
+
+    def class_name(self, class_id):
+        return CLASS_NAMES.get(self.lang, CLASS_NAMES["fr"]).get(class_id, "?")
+
+    def class_color(self, class_id):
+        return CLASS_COLORS.get(class_id, DEFAULT_CLASS_COLOR)
