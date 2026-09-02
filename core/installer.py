@@ -13,6 +13,8 @@ resautee (sauf si son fichier/dossier de destination a disparu entre temps),
 ce qui evite de re-telecharger des Go de donnees deja installees.
 """
 
+import hashlib
+import json
 import os
 import shutil
 import threading
@@ -37,6 +39,23 @@ def done_flag_path(install_dir, entry_id):
 
 def parts_cache_dir_for(install_dir, entry_id):
     return os.path.join(cache_dir_for(install_dir), "parts", entry_id)
+
+
+def manifest_fingerprint_path(install_dir):
+    return os.path.join(cache_dir_for(install_dir), "manifest_fingerprint.txt")
+
+
+def compute_manifest_fingerprint(manifest):
+    """Empreinte stable du contenu du manifest (ids, URLs, destinations...) :
+    sert a detecter qu'un manifest.json REELLEMENT different a ete publie
+    (nouvelle build du launcher embarquant un manifest.json a jour), par
+    opposition a "l'utilisateur a simplement referme puis rouvert le meme
+    launcher". json.dumps(sort_keys=True) rend la comparaison independante
+    de l'ordre des cles (mais PAS de l'ordre des entrees dans "files" ni des
+    parts, ce qui est voulu : un ajout/retrait/reordonnancement de fichiers
+    a livrer doit bien redeclencher un rafraichissement force)."""
+    encoded = json.dumps(manifest, sort_keys=True, ensure_ascii=True).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 # Destinations d'extraction PARTAGEES entre PLUSIEURS entrees du manifeste :
@@ -113,16 +132,58 @@ def reset_entry(install_dir, entry):
 def reset_forced_refresh_entries(install_dir, manifest):
     """Applique reset_entry() a CHAQUE entree du manifest (locales frFR/
     enUS, tous les patchs .MPQ du dossier Data, et l'archive
-    "AzerothUniverse (Additional)" a la racine du client) : le clic sur
-    "Verifier" ne fait donc plus jamais confiance a un ancien marqueur
-    local et retelecharge systematiquement la derniere version publiee de
-    chaque element, comme le faisait deja Aurora a la main avant chaque
-    mise a jour. Renvoie la liste des ids reinitialises, pour affichage
-    dans le journal du launcher."""
+    "AzerothUniverse (Additional)" a la racine du client), comme le faisait
+    deja Aurora a la main avant chaque mise a jour - mais UNE SEULE FOIS par
+    manifest reellement publie, pas a chaque clic sur "Verifier".
+
+    manifest.json est embarque DANS l'executable du launcher (voir
+    config.MANIFEST_PATH) : il ne change donc que lorsqu'une nouvelle build
+    du launcher est installee, jamais entre deux lancements du meme exe. Sans
+    ce garde-fou, chaque "Verifier" (y compris le tout premier, automatique,
+    a chaque ouverture - voir ui/main_window.py::_on_cta_clicked) effacait
+    TOUS les marqueurs "termine", forcant un retelechargement complet du
+    client (plusieurs Go) a chaque lancement, meme quand rien n'avait
+    change cote serveur. On compare donc une empreinte du manifest actuel a
+    celle enregistree lors du dernier reset (fichier
+    manifest_fingerprint_path()) : identique -> on ne touche a rien (le
+    verifie/reinstalle normal, base sur is_entry_done(), se charge de ne
+    retelecharger que ce qui manque reellement) ; differente (premiere
+    installation, ou nouvelle build du launcher avec un manifest.json a jour)
+    -> reset complet comme avant, puis l'empreinte est mise a jour pour ne
+    plus redeclencher tant que ce meme manifest reste en place.
+
+    Renvoie la liste des ids reinitialises (vide si rien n'a ete reinitialise
+    cette fois), pour affichage dans le journal du launcher."""
+    fingerprint = compute_manifest_fingerprint(manifest)
+    fp_path = manifest_fingerprint_path(install_dir)
+
+    previous_fingerprint = None
+    try:
+        if os.path.isfile(fp_path):
+            with open(fp_path, "r", encoding="utf-8") as f:
+                previous_fingerprint = f.read().strip()
+    except OSError:
+        previous_fingerprint = None
+
+    if previous_fingerprint == fingerprint:
+        return []
+
     reset_ids = []
     for entry in manifest.get("files", []):
         reset_entry(install_dir, entry)
         reset_ids.append(entry["id"])
+
+    try:
+        os.makedirs(os.path.dirname(fp_path), exist_ok=True)
+        with open(fp_path, "w", encoding="utf-8") as f:
+            f.write(fingerprint)
+    except OSError:
+        # Si l'ecriture echoue (disque plein, permissions...), on ne casse
+        # pas l'installation en cours pour autant : au pire, le prochain
+        # "Verifier" refera un reset complet (moins grave qu'une exception
+        # ici qui empecherait de jouer du tout).
+        pass
+
     return reset_ids
 
 
